@@ -30,6 +30,61 @@ export function getMetafieldValue(field: unknown): string {
   return '';
 }
 
+// Changed: Helper to sanitize all metadata fields that may contain {key, value} objects
+// This prevents "Objects are not valid as a React child" errors throughout the app
+function sanitizePageMetadata(page: DocPage): DocPage {
+  if (!page.metadata) return page;
+
+  const sanitized = { ...page, metadata: { ...page.metadata } };
+
+  // Sanitize badge field - convert {key, value} object to plain string
+  if (sanitized.metadata.badge && typeof sanitized.metadata.badge === 'object') {
+    const badgeValue = getMetafieldValue(sanitized.metadata.badge);
+    // Changed: Set badge to empty string if it's "None" or "none" so it won't render
+    sanitized.metadata.badge = badgeValue.toLowerCase() === 'none' ? '' : badgeValue;
+  }
+
+  // Sanitize section metadata if present
+  if (sanitized.metadata.section && typeof sanitized.metadata.section === 'object' && sanitized.metadata.section.metadata) {
+    const sectionMeta = { ...sanitized.metadata.section.metadata };
+    // Sanitize any {key, value} objects in section metadata
+    if (sectionMeta.name && typeof sectionMeta.name === 'object') {
+      sectionMeta.name = getMetafieldValue(sectionMeta.name);
+    }
+    if (sectionMeta.description && typeof sectionMeta.description === 'object') {
+      sectionMeta.description = getMetafieldValue(sectionMeta.description);
+    }
+    if (sectionMeta.icon && typeof sectionMeta.icon === 'object') {
+      sectionMeta.icon = getMetafieldValue(sectionMeta.icon);
+    }
+    sanitized.metadata.section = {
+      ...sanitized.metadata.section,
+      metadata: sectionMeta,
+    };
+  }
+
+  return sanitized;
+}
+
+// Changed: Helper to sanitize section metadata
+function sanitizeSectionMetadata(section: DocSection): DocSection {
+  if (!section.metadata) return section;
+
+  const sanitized = { ...section, metadata: { ...section.metadata } };
+
+  if (sanitized.metadata.name && typeof sanitized.metadata.name === 'object') {
+    sanitized.metadata.name = getMetafieldValue(sanitized.metadata.name);
+  }
+  if (sanitized.metadata.description && typeof sanitized.metadata.description === 'object') {
+    sanitized.metadata.description = getMetafieldValue(sanitized.metadata.description);
+  }
+  if (sanitized.metadata.icon && typeof sanitized.metadata.icon === 'object') {
+    sanitized.metadata.icon = getMetafieldValue(sanitized.metadata.icon);
+  }
+
+  return sanitized;
+}
+
 export async function getDocSections(): Promise<DocSection[]> {
   try {
     const response = await cosmic.objects
@@ -38,7 +93,8 @@ export async function getDocSections(): Promise<DocSection[]> {
       .depth(1);
 
     const sections = response.objects as DocSection[];
-    return sections.sort((a, b) => {
+    // Changed: Sanitize section metadata before returning
+    return sections.map(sanitizeSectionMetadata).sort((a, b) => {
       const orderA = Number(a.metadata?.order) || 999;
       const orderB = Number(b.metadata?.order) || 999;
       return orderA - orderB;
@@ -59,7 +115,8 @@ export async function getDocPages(): Promise<DocPage[]> {
       .depth(1);
 
     const pages = response.objects as DocPage[];
-    return pages.sort((a, b) => {
+    // Changed: Sanitize page metadata before returning
+    return pages.map(sanitizePageMetadata).sort((a, b) => {
       const orderA = Number(a.metadata?.order) || 999;
       const orderB = Number(b.metadata?.order) || 999;
       return orderA - orderB;
@@ -79,7 +136,8 @@ export async function getDocPageBySlug(slug: string): Promise<DocPage | null> {
       .props(['id', 'slug', 'title', 'metadata'])
       .depth(1);
 
-    return response.object as DocPage;
+    // Changed: Sanitize page metadata before returning
+    return sanitizePageMetadata(response.object as DocPage);
   } catch (error: unknown) {
     if (hasStatus(error) && error.status === 404) {
       return null;

@@ -60,36 +60,42 @@ export default async function DocsIndexPage() {
                 <p className="text-sm text-gray-400 ml-11">No pages in this section yet.</p>
               ) : (
                 <div className="ml-11 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {pages.map((page) => (
-                    <Link
-                      key={page.id}
-                      href={`/docs/${page.slug}`}
-                      className="group flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-accent/30 hover:bg-accent-subtle/50 transition-all duration-200"
-                    >
-                      <svg
-                        className="w-4 h-4 flex-shrink-0 text-gray-400 group-hover:text-accent transition-colors"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
+                  {pages.map((page) => {
+                    {/* Changed: Extract badge as string safely, already sanitized by cosmic.ts */}
+                    const badgeText = getMetafieldValue(page.metadata?.badge);
+                    const showBadge = badgeText && badgeText.toLowerCase() !== 'none';
+
+                    return (
+                      <Link
+                        key={page.id}
+                        href={`/docs/${page.slug}`}
+                        className="group flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-accent/30 hover:bg-accent-subtle/50 transition-all duration-200"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <span className="text-sm text-gray-700 group-hover:text-accent font-medium transition-colors">
-                        {page.title}
-                      </span>
-                      {page.metadata?.badge && (
-                        <span className="ml-auto text-xs bg-badge-blue text-badge-blue-text px-2 py-0.5 rounded-full font-medium">
-                          {/* Changed: Use getMetafieldValue for badge */}
-                          {getMetafieldValue(page.metadata.badge)}
+                        <svg
+                          className="w-4 h-4 flex-shrink-0 text-gray-400 group-hover:text-accent transition-colors"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-700 group-hover:text-accent font-medium transition-colors">
+                          {page.title}
                         </span>
-                      )}
-                    </Link>
-                  ))}
+                        {/* Changed: Use pre-extracted string badgeText instead of raw metadata object */}
+                        {showBadge && (
+                          <span className="ml-auto text-xs bg-badge-blue text-badge-blue-text px-2 py-0.5 rounded-full font-medium">
+                            {badgeText}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

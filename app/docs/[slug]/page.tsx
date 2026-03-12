@@ -54,14 +54,16 @@ export default async function DocPageRoute({
   const nextPage =
     currentIndex < allPages.length - 1 ? allPages[currentIndex + 1] : undefined;
 
-  // Changed: Use getMetafieldValue to safely extract string from potential {key,value} object
+  // Changed: Data is already sanitized by cosmic.ts, but use getMetafieldValue as safety net
   const sectionTitle =
     getMetafieldValue(page.metadata?.section?.metadata?.name) ||
     page.metadata?.section?.title ||
     '';
 
-  // Changed: Safely extract badge value as string
+  // Changed: Badge is already sanitized to a plain string by cosmic.ts
   const badgeValue = getMetafieldValue(page.metadata?.badge);
+  // Changed: Filter out "None" badge values
+  const showBadge = badgeValue && badgeValue.toLowerCase() !== 'none';
 
   return (
     <div className="max-w-content mx-auto px-6 py-10 lg:py-14 animate-fade-in">
@@ -93,8 +95,8 @@ export default async function DocPageRoute({
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
             {page.title}
           </h1>
-          {/* Changed: Use extracted string badgeValue for PageBadge */}
-          {badgeValue && (
+          {/* Changed: Only show badge when it's a meaningful value */}
+          {showBadge && (
             <PageBadge badge={badgeValue} />
           )}
         </div>
