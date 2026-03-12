@@ -7,6 +7,8 @@ import type { Version } from '@/types';
 import SectionIcon from '@/components/SectionIcon';
 import SearchDialog from '@/components/SearchDialog';
 import { useState, useMemo } from 'react';
+// Changed: Import getMetafieldValue from shared utility (safe for client components)
+import { getMetafieldValue } from '@/lib/utils';
 
 interface SidebarProps {
   sidebarData: SidebarSection[];
@@ -96,7 +98,8 @@ export default function Sidebar({ sidebarData, version }: SidebarProps) {
               <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-sidebar-text/60 uppercase tracking-wider">
                 <SectionIcon icon={section.metadata?.icon} size="sm" />
                 <span className="truncate">
-                  {section.metadata?.name || section.title}
+                  {/* Changed: Use getMetafieldValue to safely extract string from potential {key,value} object */}
+                  {getMetafieldValue(section.metadata?.name) || section.title}
                 </span>
               </div>
               <div className="mt-1 space-y-0.5">
@@ -113,9 +116,10 @@ export default function Sidebar({ sidebarData, version }: SidebarProps) {
                       }`}
                     >
                       <span className="truncate">{page.title}</span>
-                      {page.metadata?.badge && (
+                      {/* Changed: Use getMetafieldValue to safely extract badge string */}
+                      {getMetafieldValue(page.metadata?.badge) && (
                         <span className="ml-auto text-[10px] bg-accent/20 text-accent-light px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">
-                          {page.metadata.badge}
+                          {getMetafieldValue(page.metadata?.badge)}
                         </span>
                       )}
                     </Link>

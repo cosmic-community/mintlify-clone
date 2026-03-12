@@ -8,27 +8,14 @@ import type {
 } from '@/types';
 import { hasStatus } from '@/types';
 
+// Changed: Re-export getMetafieldValue from shared utility so existing imports still work
+export { getMetafieldValue } from '@/lib/utils';
+
 export const cosmic = createBucketClient({
   bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
   readKey: process.env.COSMIC_READ_KEY as string,
   writeKey: process.env.COSMIC_WRITE_KEY as string,
 });
-
-// Changed: Added getMetafieldValue helper to safely extract string values
-// from select-dropdown, radio-buttons, or check-boxes metafields that may
-// be returned as {key, value} objects instead of plain strings.
-export function getMetafieldValue(field: unknown): string {
-  if (field === null || field === undefined) return '';
-  if (typeof field === 'string') return field;
-  if (typeof field === 'number' || typeof field === 'boolean') return String(field);
-  if (typeof field === 'object' && field !== null && 'value' in field) {
-    return String((field as { value: unknown }).value);
-  }
-  if (typeof field === 'object' && field !== null && 'key' in field) {
-    return String((field as { key: unknown }).key);
-  }
-  return '';
-}
 
 export async function getDocSections(): Promise<DocSection[]> {
   try {
