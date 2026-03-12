@@ -1,5 +1,6 @@
 import type { ChangelogEntry as ChangelogEntryType } from '@/types';
-import { getMetafieldValue } from '@/types';
+// Changed: Import getMetafieldValue from lib/cosmic where it's actually defined
+import { getMetafieldValue } from '@/lib/cosmic';
 
 interface ChangelogEntryProps {
   entry: ChangelogEntryType;
@@ -11,8 +12,12 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
   bugfix: { bg: 'bg-badge-red', text: 'text-badge-red-text' },
   bug: { bg: 'bg-badge-red', text: 'text-badge-red-text' },
   fix: { bg: 'bg-badge-red', text: 'text-badge-red-text' },
+  fixed: { bg: 'bg-badge-red', text: 'text-badge-red-text' }, // Changed: Added "fixed" to match CMS category value
+  added: { bg: 'bg-badge-green', text: 'text-badge-green-text' }, // Changed: Added "added" to match CMS category value
+  changed: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' }, // Changed: Added "changed" to match CMS category value
   breaking: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' },
   deprecation: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' },
+  deprecated: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' }, // Changed: Added "deprecated" to match CMS category value
   security: { bg: 'bg-badge-purple', text: 'text-badge-purple-text' },
 };
 
@@ -29,15 +34,16 @@ function getCategoryStyle(rawCategory: string): { bg: string; text: string } {
 }
 
 export default function ChangelogEntry({ entry }: ChangelogEntryProps) {
+  // Changed: Use getMetafieldValue to safely extract string from {key, value} category object
   const category = getMetafieldValue(entry.metadata?.category);
   const categoryStyle = category ? getCategoryStyle(category) : null;
 
   const formattedDate = entry.metadata?.date
     ? new Date(entry.metadata.date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
     : null;
 
   return (
