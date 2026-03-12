@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getSidebarData } from '@/lib/cosmic';
+import { getSidebarData, getMetafieldValue } from '@/lib/cosmic';
 import SectionIcon from '@/components/SectionIcon';
 
 export const metadata = {
@@ -46,12 +46,14 @@ export default async function DocsIndexPage() {
                   <SectionIcon icon={section.metadata?.icon} />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {section.metadata?.name || section.title}
+                  {/* Changed: Use getMetafieldValue to safely extract string from potential {key,value} object */}
+                  {getMetafieldValue(section.metadata?.name) || section.title}
                 </h2>
               </div>
               {section.metadata?.description && (
                 <p className="text-gray-500 mb-4 ml-11">
-                  {section.metadata.description}
+                  {/* Changed: Use getMetafieldValue for description */}
+                  {getMetafieldValue(section.metadata.description)}
                 </p>
               )}
               {pages.length === 0 ? (
@@ -82,7 +84,8 @@ export default async function DocsIndexPage() {
                       </span>
                       {page.metadata?.badge && (
                         <span className="ml-auto text-xs bg-badge-blue text-badge-blue-text px-2 py-0.5 rounded-full font-medium">
-                          {page.metadata.badge}
+                          {/* Changed: Use getMetafieldValue for badge */}
+                          {getMetafieldValue(page.metadata.badge)}
                         </span>
                       )}
                     </Link>

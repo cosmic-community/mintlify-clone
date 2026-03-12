@@ -1,6 +1,6 @@
 // app/docs/[slug]/page.tsx
 import { notFound } from 'next/navigation';
-import { getDocPageBySlug, getDocPages, getSidebarData } from '@/lib/cosmic';
+import { getDocPageBySlug, getDocPages, getSidebarData, getMetafieldValue } from '@/lib/cosmic';
 import DocContent from '@/components/DocContent';
 import PageBadge from '@/components/PageBadge';
 import Link from 'next/link';
@@ -27,7 +27,7 @@ export async function generateMetadata({
   return {
     title: `${page.title} — DevDocs`,
     description: page.metadata?.content
-      ? page.metadata.content.replace(/<[^>]*>/g, '').substring(0, 160)
+      ? getMetafieldValue(page.metadata.content).replace(/<[^>]*>/g, '').substring(0, 160)
       : `Documentation for ${page.title}`,
   };
 }
@@ -54,10 +54,14 @@ export default async function DocPageRoute({
   const nextPage =
     currentIndex < allPages.length - 1 ? allPages[currentIndex + 1] : undefined;
 
+  // Changed: Use getMetafieldValue to safely extract string from potential {key,value} object
   const sectionTitle =
-    page.metadata?.section?.metadata?.name ||
+    getMetafieldValue(page.metadata?.section?.metadata?.name) ||
     page.metadata?.section?.title ||
     '';
+
+  // Changed: Safely extract badge value as string
+  const badgeValue = getMetafieldValue(page.metadata?.badge);
 
   return (
     <div className="max-w-content mx-auto px-6 py-10 lg:py-14 animate-fade-in">
@@ -89,14 +93,15 @@ export default async function DocPageRoute({
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">
             {page.title}
           </h1>
-          {page.metadata?.badge && (
-            <PageBadge badge={page.metadata.badge} />
+          {/* Changed: Use extracted string badgeValue for PageBadge */}
+          {badgeValue && (
+            <PageBadge badge={badgeValue} />
           )}
         </div>
       </div>
 
       {/* Content */}
-      <DocContent content={page.metadata?.content || ''} />
+      <DocContent content={getMetafieldValue(page.metadata?.content)} />
 
       {/* Prev / Next Navigation */}
       <div className="mt-16 pt-8 border-t border-gray-100 grid grid-cols-2 gap-4">

@@ -1,3 +1,6 @@
+// Changed: Import getMetafieldValue to safely handle {key, value} objects passed as badge
+import { getMetafieldValue } from '@/lib/cosmic';
+
 interface PageBadgeProps {
   badge: string;
 }
@@ -23,15 +26,17 @@ function getBadgeStyle(badge: string): { bg: string; text: string } {
 }
 
 export default function PageBadge({ badge }: PageBadgeProps) {
-  if (!badge) return null;
+  // Changed: Use getMetafieldValue to safely extract string from potential {key,value} object
+  const badgeText = getMetafieldValue(badge);
+  if (!badgeText) return null;
 
-  const style = getBadgeStyle(badge);
+  const style = getBadgeStyle(badgeText);
 
   return (
     <span
       className={`inline-flex items-center text-xs font-medium px-2.5 py-1 rounded-full ${style.bg} ${style.text}`}
     >
-      {badge}
+      {badgeText}
     </span>
   );
 }
