@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getDocSections, getDocPages, getVersion, getChangelogEntries } from '@/lib/cosmic';
+import { getDocSections, getDocPages, getVersion, getChangelogEntries, getMetafieldValue } from '@/lib/cosmic';
 import SectionIcon from '@/components/SectionIcon';
 import VersionBadge from '@/components/VersionBadge';
 
@@ -142,33 +142,47 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="space-y-4">
-            {changelog.slice(0, 3).map((entry) => (
-              <div
-                key={entry.id}
-                className="flex items-start gap-4 bg-gray-50 rounded-xl p-5 border border-gray-100"
-              >
-                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-accent mt-2" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{entry.title}</h3>
-                    {entry.metadata?.version_tag && (
-                      <span className="text-xs font-mono bg-accent-subtle text-accent px-2 py-0.5 rounded-full">
-                        {entry.metadata.version_tag}
-                      </span>
+            {changelog.slice(0, 3).map((entry) => {
+              // Changed: Use getMetafieldValue to safely extract string values
+              // from version_tag and category which may be {key, value} objects
+              const versionTag = getMetafieldValue(entry.metadata?.version_tag);
+              const category = getMetafieldValue(entry.metadata?.category);
+
+              return (
+                <div
+                  key={entry.id}
+                  className="flex items-start gap-4 bg-gray-50 rounded-xl p-5 border border-gray-100"
+                >
+                  <div className="flex-shrink-0 w-2 h-2 rounded-full bg-accent mt-2" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-gray-900 text-sm">{entry.title}</h3>
+                      {/* Changed: Render safe string versionTag instead of raw metadata value */}
+                      {versionTag && (
+                        <span className="text-xs font-mono bg-accent-subtle text-accent px-2 py-0.5 rounded-full">
+                          {versionTag}
+                        </span>
+                      )}
+                      {/* Changed: Render safe string category for display */}
+                      {category && (
+                        <span className="text-xs font-medium text-gray-500">
+                          {category}
+                        </span>
+                      )}
+                    </div>
+                    {entry.metadata?.date && (
+                      <p className="text-xs text-gray-400">
+                        {new Date(entry.metadata.date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
                     )}
                   </div>
-                  {entry.metadata?.date && (
-                    <p className="text-xs text-gray-400">
-                      {new Date(entry.metadata.date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </p>
-                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

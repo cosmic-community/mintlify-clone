@@ -12,12 +12,12 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
   bugfix: { bg: 'bg-badge-red', text: 'text-badge-red-text' },
   bug: { bg: 'bg-badge-red', text: 'text-badge-red-text' },
   fix: { bg: 'bg-badge-red', text: 'text-badge-red-text' },
-  fixed: { bg: 'bg-badge-red', text: 'text-badge-red-text' }, // Changed: Added "fixed" to match CMS category value
-  added: { bg: 'bg-badge-green', text: 'text-badge-green-text' }, // Changed: Added "added" to match CMS category value
-  changed: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' }, // Changed: Added "changed" to match CMS category value
+  fixed: { bg: 'bg-badge-red', text: 'text-badge-red-text' },
+  added: { bg: 'bg-badge-green', text: 'text-badge-green-text' },
+  changed: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' },
   breaking: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' },
   deprecation: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' },
-  deprecated: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' }, // Changed: Added "deprecated" to match CMS category value
+  deprecated: { bg: 'bg-badge-yellow', text: 'text-badge-yellow-text' },
   security: { bg: 'bg-badge-purple', text: 'text-badge-purple-text' },
 };
 
@@ -34,15 +34,17 @@ function getCategoryStyle(rawCategory: string): { bg: string; text: string } {
 }
 
 export default function ChangelogEntry({ entry }: ChangelogEntryProps) {
-  // Changed: Use getMetafieldValue to safely extract string from {key, value} category object
+  // Changed: Use getMetafieldValue to safely extract string from {key, value} objects
   const category = getMetafieldValue(entry.metadata?.category);
   const categoryStyle = category ? getCategoryStyle(category) : null;
+  // Changed: Use getMetafieldValue for version_tag to prevent {key,value} object rendering
+  const versionTag = getMetafieldValue(entry.metadata?.version_tag);
 
   const formattedDate = entry.metadata?.date
     ? new Date(entry.metadata.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
         })
     : null;
 
@@ -55,9 +57,10 @@ export default function ChangelogEntry({ entry }: ChangelogEntryProps) {
         {/* Header */}
         <div className="flex flex-wrap items-center gap-2 mb-3">
           <h3 className="text-lg font-semibold text-gray-900">{entry.title}</h3>
-          {entry.metadata?.version_tag && (
+          {/* Changed: Render safe string versionTag instead of raw metadata value */}
+          {versionTag && (
             <span className="text-xs font-mono bg-accent-subtle text-accent px-2 py-0.5 rounded-full font-medium">
-              {entry.metadata.version_tag}
+              {versionTag}
             </span>
           )}
           {category && categoryStyle && (
